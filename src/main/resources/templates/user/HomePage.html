@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/layout.html}"
+>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div layout:fragment="main-content">
+    <!--NOI DUNG O DAY-->
+    <div class="row">
+        <div class="col-12">
+            <div class="card card-primary">
+                Hello <p th:text="${obj1.name}"></p>
+                <a th:href="@{/user/show(id=${obj1.id})}"
+                   class="btn btn-block btn-warning btn-sm">Detail user</a>
+            </div>
+        </div>
+    </div>
+    <!--END MAIN CONTENT-->
+</div>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/layout.html}"
+>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div layout:fragment="main-content">
+    <!--NOI DUNG O DAY-->
+    <div class="row">
+        <div class="col-12">
+            <div class="card card-primary">
+                ID: <p th:text="${obj2.id_number}"></p><br/>
+                Name: <p th:text="${obj2.name}"></p><br/>
+                Password: <p th:text="${obj2.password}"></p><br/>
+                Email: <p th:text="${obj2.email}"></p><br/>
+                Phone Number: <p th:text="${obj2.phone_number}"></p><br/>
+                Address: <p th:text="${obj2.address}"></p><br/>
+                Emoji: <img th:src="@{'/uploads/' + ${obj2.emoji}}" alt="Cinque Terre" width="20%" height="20%" /><br/>
+
+                <a th:href="@{/user/edit(id=${obj2.id})}"
+                   class="btn btn-block btn-warning btn-sm">Edit</a>
+            </div>
+        </div>
+    </div>
+    <!--END MAIN CONTENT-->
+</div>
+</body>
+</html>
