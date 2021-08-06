@@ -55,7 +55,7 @@ public class UserController implements IAdminController<User>{
 
     @Override
     @PostMapping("/do-add")
-    public String doAdd(User user, RedirectAttributes redirectAttributes) {
+    public String doAdd(User user, RedirectAttributes redirectAttributes, @RequestParam(name = "file") MultipartFile file) {
         String len = user.getId_number();
         if(len.length() >= 8){
             int s1 = 0, s2 = 0, s3 = 0;
@@ -142,8 +142,32 @@ public class UserController implements IAdminController<User>{
                                                 }else{
                                                     String dc = user.getAddress();
                                                     if(dc.length() > 0){
-                                                        userService.getService().save(user);
-                                                        redirectAttributes.addFlashAttribute("success", "Đăng ký thành công");
+														try {
+
+															Date date = new Date();
+															LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+															int year = localDate.getYear();
+															int month = localDate.getMonthValue();
+
+															String saveFolder = UPLOADED_FOLDER + month + "_" + year + "/";
+
+															File dir = new File(saveFolder);
+															if (dir.isFile() || !dir.exists()) {
+																dir.mkdir();
+															}
+
+															String filename = System.currentTimeMillis() + file.getOriginalFilename();
+
+															byte[] bytes = file.getBytes();
+															Path path = Paths.get(dir.getAbsolutePath() + "/" + filename);
+															Files.write(path, bytes);
+															user.setEmoji(saveFolder.replace(UPLOADED_FOLDER, "") + filename);
+															userService.getService().save(user);
+															redirectAttributes.addFlashAttribute("success", "Đăng ký thành công");
+														} catch (Exception e) {
+															e.printStackTrace();
+															attributes.addFlashAttribute("error", "Đăng ký thất bại");
+														}
                                                     }else{
                                                         redirectAttributes.addFlashAttribute("error5", "Địa chỉ không được bỏ trống!");
                                                     }
@@ -177,10 +201,122 @@ public class UserController implements IAdminController<User>{
     @Override
     @PostMapping("/do-edit")
     public String doEdit(User user, RedirectAttributes redirectAttributes) {
-        if (userService.getService().save(user)) {
-            redirectAttributes.addFlashAttribute("success", "Sửa thành công");
-        } else {
-            redirectAttributes.addFlashAttribute("error", "Sửa thất bại");
+        String len = user.getId_number();
+        if(len.length() >= 8){
+            int s1 = 0, s2 = 0, s3 = 0;
+            for(int i = 0; i < len.length(); i++){
+                if(len.charAt(i) >= 'a' && len.charAt(i) <= 'z'){
+                    s1++;
+                }else if(len.charAt(i) >= 'A' && len.charAt(i) <= 'Z'){
+                    s2++;
+                }else if(len.charAt(i) >= '0' && len.charAt(i) <= '9'){
+                    s3++;
+                }
+            }
+            if((s1 >= 1) && (s2 >= 1) && (s3 >= 1)){
+                String name = user.getName();
+                if(name.length() > 0){
+                    String temp = user.getPassword();
+                    int g1 = 0, g2 = 0, g3 = 0, g4 = 0;
+                    if(temp.length() >= 8){
+                        for(int j = 0; j < temp.length(); j++){
+                            if(temp.charAt(j) >= 'a' && temp.charAt(j) <= 'z'){
+                                g1++;
+                            }else if(temp.charAt(j) >= 'A' && temp.charAt(j) <= 'Z'){
+                                g2++;
+                            }else if(temp.charAt(j) >= '0' && temp.charAt(j) <= '9'){
+                                g3++;
+                            }else if(temp.charAt(j) == '!' || temp.charAt(j) == '@' || temp.charAt(j) == '#' || temp.charAt(j) == '$'
+                                || temp.charAt(j) == '%' || temp.charAt(j) == '^' || temp.charAt(j) == '&' || temp.charAt(j) == '*'
+                                || temp.charAt(j) == '.' || temp.charAt(j) == '(' || temp.charAt(j) == ')' || temp.charAt(j) == '+'
+                                    || temp.charAt(j) == '-' || temp.charAt(j) == '[' || temp.charAt(j) == ']' || temp.charAt(j) == '{'
+                                    || temp.charAt(j) == '}' || temp.charAt(j) == '<' || temp.charAt(j) == '>' || temp.charAt(j) == '?'
+                                    || temp.charAt(j) == ';' || temp.charAt(j) == ':'){
+                                g4++;
+                            }
+                        }
+                        if((g1 >= 1) && (g2 >= 1) && (g3 >= 1) && (g4 >= 1)){
+                            String mail = user.getEmail();
+                            int k = 0;
+                            for(int u = 0; u < mail.length(); u++){
+                                if(mail.charAt(u) == '@'){
+                                    k = u;
+                                    break;
+                                }
+                            }
+                            if(k == 0){
+                                redirectAttributes.addFlashAttribute("error4", "Mail không hợp lệ!");
+                            }else{
+                                int h = 0;
+                                for(int m = 0; m < k; m++){
+                                    if((mail.charAt(m) >= 'a') && (mail.charAt(m) <= 'z')) continue;
+                                    else if((mail.charAt(m) >= 'A') && (mail.charAt(m) <= 'Z')) continue;
+                                    else if((mail.charAt(m) >= '0') && (mail.charAt(m) <= '9')) continue;
+                                    else h++;
+                                }
+                                if(h > 0){
+                                    redirectAttributes.addFlashAttribute("error4", "Mail không hợp lệ!");
+                                }else{
+                                    if((mail.charAt(mail.length()-4)) != '.' && (mail.charAt(mail.length()-3)) != 'c'
+                                    && (mail.charAt(mail.length()-2)) != 'o' && (mail.charAt(mail.length()-1)) != 'm'){
+                                        redirectAttributes.addFlashAttribute("error4", "Mail không hợp lệ!");
+                                    }else{
+                                        int h1 = 0;
+                                        for(int m1 = k+1; m1 < mail.length()-4; m1++){
+                                            if((mail.charAt(m1) >= 'a') && (mail.charAt(m1) <= 'z')) continue;
+                                            else if((mail.charAt(m1) >= 'A') && (mail.charAt(m1) <= 'Z')) continue;
+                                            else if((mail.charAt(m1) >= '0') && (mail.charAt(m1) <= '9')) continue;
+                                            else h1++;
+                                        }
+                                        if(h1 > 0){
+                                            redirectAttributes.addFlashAttribute("error4", "Mail không hợp lệ!");
+                                        }else{
+                                            String res = user.getPhone_number();
+                                            if(res.length() == 13){
+                                                int y = 0;
+                                                if(res.charAt(3) != '-' || res.charAt(8) != '-') y++;
+                                                for(int r = 0; r < res.length(); r++){
+                                                    if(r != 3 && r != 8){
+                                                        if(res.charAt(r) >= '0' && res.charAt(r) <= '9'){
+                                                            continue;
+                                                        }else y++;
+                                                    }
+                                                }
+                                                if(y > 0){
+                                                    redirectAttributes.addFlashAttribute("error5", "SĐT có phải dạng 010-0000-0000");
+                                                }else{
+                                                    String dc = user.getAddress();
+                                                    if(dc.length() > 0){
+														
+															if(userService.getService().save(user))
+															     redirectAttributes.addFlashAttribute("success", "Sửa thành công");
+															else attributes.addFlashAttribute("error", "Sửa thất bại");
+                                                    }else{
+                                                        redirectAttributes.addFlashAttribute("error5", "Địa chỉ không được bỏ trống!");
+                                                    }
+                                                }
+                                            }else{
+                                                redirectAttributes.addFlashAttribute("error5", "SĐT có phải dạng 010-0000-0000");
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }else{
+                            redirectAttributes.addFlashAttribute("error3", "Password Phải chứa ít nhất 8 ký " +
+                                    "tự ban gồm ít nhất 1 chữ thường , 1 chữ hoa và 1 số và 1 ký tự đặc biệt.");
+                        }
+                    }
+                }else{
+                    redirectAttributes.addFlashAttribute("error2", "Tên người dùng không được để trống.");
+                }
+            }else{
+                redirectAttributes.addFlashAttribute("error1", "ID Phải chứa ít nhất 8 ký " +
+                        "tự ban gồm ít nhất 1 chữ thường , 1 chữ hoa và 1 số");
+            }
+        }else{
+            redirectAttributes.addFlashAttribute("error1", "ID Phải chứa ít nhất 8 ký " +
+                                           "tự ban gồm ít nhất 1 chữ thường , 1 chữ hoa và 1 số");
         }
 
         return "redirect:/admin/user/";
