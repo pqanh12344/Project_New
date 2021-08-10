@@ -13,10 +13,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Controller
 @RequestMapping("/user")
 public class IIUserController implements IUserController<User> {
+	public static final Pattern p = Pattern.compile("/^([a-zA-Z0-9_\\.\\-])+\\@(([a-zA-Z0-9\\-])+\\.)+([a-zA-Z0-9]{2,4})+$/");
+	
     @Autowired
     UserService userService;
 
@@ -93,38 +97,8 @@ public class IIUserController implements IUserController<User> {
                         }
                         if((g1 >= 1) && (g2 >= 1) && (g3 >= 1) && (g4 >= 1)){
                             String mail = user.getEmail();
-                            int k = 0;
-                            for(int u = 0; u < mail.length(); u++){
-                                if(mail.charAt(u) == '@'){
-                                    k = u;
-                                    break;
-                                }
-                            }
-                            if(k == 0){
-                                redirectAttributes.addFlashAttribute("error4", "Mail không hợp lệ!");
-                            }else{
-                                int h = 0;
-                                for(int m = 0; m < k; m++){
-                                    if((mail.charAt(m) >= 'a') && (mail.charAt(m) <= 'z')) continue;
-                                    else if((mail.charAt(m) >= 'A') && (mail.charAt(m) <= 'Z')) continue;
-                                    else if((mail.charAt(m) >= '0') && (mail.charAt(m) <= '9')) continue;
-                                    else h++;
-                                }
-                                if(h > 0){
-                                    redirectAttributes.addFlashAttribute("error4", "Mail không hợp lệ!");
-                                }else{
-                                    if((mail.charAt(mail.length()-4)) != '.' && (mail.charAt(mail.length()-3)) != 'c'
-                                    && (mail.charAt(mail.length()-2)) != 'o' && (mail.charAt(mail.length()-1)) != 'm'){
-                                        redirectAttributes.addFlashAttribute("error4", "Mail không hợp lệ!");
-                                    }else{
-                                        int h1 = 0;
-                                        for(int m1 = k+1; m1 < mail.length()-4; m1++){
-                                            if((mail.charAt(m1) >= 'a') && (mail.charAt(m1) <= 'z')) continue;
-                                            else if((mail.charAt(m1) >= 'A') && (mail.charAt(m1) <= 'Z')) continue;
-                                            else if((mail.charAt(m1) >= '0') && (mail.charAt(m1) <= '9')) continue;
-                                            else h1++;
-                                        }
-                                        if(h1 > 0){
+                            Matcher matcher = p.matcher(mail);
+                                        if(!matcher.find()){
                                             redirectAttributes.addFlashAttribute("error4", "Mail không hợp lệ!");
                                         }else{
                                             String res = user.getPhone_number();
@@ -146,7 +120,7 @@ public class IIUserController implements IUserController<User> {
 														
 															if(userService.getService().save(user))
 															     redirectAttributes.addFlashAttribute("success", "Sửa thành công");
-															else attributes.addFlashAttribute("error", "Sửa thất bại");
+															else redirectAttributes.addFlashAttribute("error", "Sửa thất bại");
                                                     }else{
                                                         redirectAttributes.addFlashAttribute("error5", "Địa chỉ không được bỏ trống!");
                                                     }
@@ -155,9 +129,6 @@ public class IIUserController implements IUserController<User> {
                                                 redirectAttributes.addFlashAttribute("error5", "SĐT có phải dạng 010-0000-0000");
                                             }
                                         }
-                                    }
-                                }
-                            }
                         }else{
                             redirectAttributes.addFlashAttribute("error3", "Password Phải chứa ít nhất 8 ký " +
                                     "tự ban gồm ít nhất 1 chữ thường , 1 chữ hoa và 1 số và 1 ký tự đặc biệt.");
